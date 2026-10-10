@@ -2,6 +2,11 @@
 
 VectorRuntime is a lightweight Android library that allows you to change VectorDrawable colors and strokes at runtime without editing XML files.
 
+<p align="center">
+  <img src="Preview/Animation.gif" alt="VectorRuntime Animation Preview" width="280"/>
+</p>
+
+
 ## Features
 
 - Change path fill colors.
