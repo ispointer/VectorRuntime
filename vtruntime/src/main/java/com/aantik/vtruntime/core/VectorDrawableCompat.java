@@ -71,6 +71,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * For API 24 and above, this class delegates to the framework's {@link VectorDrawable}.
@@ -339,9 +340,136 @@ public class VectorDrawableCompat extends VectorDrawableCommon {
         return this;
     }
 
-    Object getTargetByName(String name) {
-        return mVectorState.mVPathRenderer.mVGTargetsMap.get(name);
+    /////////////////////// Code by @aantik_mods
+    public Object getTargetByName(String name) {
+        if (mVectorState != null && mVectorState.mVPathRenderer != null) {
+            return mVectorState.mVPathRenderer.mVGTargetsMap.get(name);
+        }
+        return null;
     }
+
+    public boolean setPathFillColor(String pathName, @ColorInt int color) {
+        Object target = getTargetByName(pathName);
+        if (target instanceof VFullPath) {
+            ((VFullPath) target).setFillColor(color);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setPathFillColor(int index, @ColorInt int color) {
+        List<VFullPath> paths = getAllFullPaths();
+        if (index >= 0 && index < paths.size()) {
+            paths.get(index).setFillColor(color);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setPathStrokeColor(String pathName, @ColorInt int color) {
+        Object target = getTargetByName(pathName);
+        if (target instanceof VFullPath) {
+            ((VFullPath) target).setStrokeColor(color);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setPathStrokeColor(int index, @ColorInt int color) {
+        List<VFullPath> paths = getAllFullPaths();
+        if (index >= 0 && index < paths.size()) {
+            paths.get(index).setStrokeColor(color);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setPathStrokeWidth(String pathName, float strokeWidth) {
+        Object target = getTargetByName(pathName);
+        if (target instanceof VFullPath) {
+            ((VFullPath) target).setStrokeWidth(strokeWidth);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean setPathStrokeWidth(int index, float strokeWidth) {
+        List<VFullPath> paths = getAllFullPaths();
+        if (index >= 0 && index < paths.size()) {
+            paths.get(index).setStrokeWidth(strokeWidth);
+            if (mVectorState != null) {
+                mVectorState.mCacheDirty = true;
+            }
+            invalidateSelf();
+            return true;
+        }
+        return false;
+    }
+
+    @ColorInt
+    public int getPathFillColor(String pathName) {
+        Object target = getTargetByName(pathName);
+        if (target instanceof VFullPath) {
+            return ((VFullPath) target).getFillColor();
+        }
+        return 0;
+    }
+
+    @ColorInt
+    public int getPathFillColor(int index) {
+        List<VFullPath> paths = getAllFullPaths();
+        if (index >= 0 && index < paths.size()) {
+            return paths.get(index).getFillColor();
+        }
+        return 0;
+    }
+
+    public int getPathCount() {
+        return getAllFullPaths().size();
+    }
+
+    public List<VFullPath> getAllFullPaths() {
+        List<VFullPath> list = new ArrayList<>();
+        if (mVectorState != null && mVectorState.mVPathRenderer != null) {
+            collectFullPaths(mVectorState.mVPathRenderer.mRootGroup, list);
+        }
+        return list;
+    }
+
+    private void collectFullPaths(VGroup group, List<VFullPath> list) {
+        if (group == null) return;
+        for (int i = 0; i < group.mChildren.size(); i++) {
+            VObject child = group.mChildren.get(i);
+            if (child instanceof VGroup) {
+                collectFullPaths((VGroup) child, list);
+            } else if (child instanceof VFullPath) {
+                list.add((VFullPath) child);
+            }
+        }
+    }
+
+    /////////////////////////////////////////////  Code by @aantik_mods
+
 
     @Override
     public @NonNull ConstantState getConstantState() {
@@ -638,7 +766,7 @@ public class VectorDrawableCompat extends VectorDrawableCommon {
      * @param theme the theme of this vector drawable, it can be null.
      * @return a new VectorDrawableCompat or null if parsing error is found.
      */
-    public static @Nullable VectorDrawableCompat create(@NonNull Resources res,
+   /* public static @Nullable VectorDrawableCompat create(@NonNull Resources res,
             @DrawableRes int resId, @Nullable Theme theme) {
         if (Build.VERSION.SDK_INT >= 24) {
             final VectorDrawableCompat drawable = new VectorDrawableCompat();
@@ -646,8 +774,22 @@ public class VectorDrawableCompat extends VectorDrawableCommon {
             return drawable;
         }
         return createWithoutDelegate(res, resId, theme);
-    }
+    }*/
 
+
+    /**
+     *
+     *
+     * @Aantik_Mods Public api for all sdk 
+     * @param res
+     * @param resId
+     * @param theme
+     * @return
+     */
+    public static @Nullable VectorDrawableCompat create(@NonNull Resources res,
+                                                        @DrawableRes int resId, @Nullable Theme theme) {
+        return createWithoutDelegate(res, resId, theme);
+    }
     static VectorDrawableCompat createWithoutDelegate(
             @NonNull Resources res,
             @DrawableRes int resId,
